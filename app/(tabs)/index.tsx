@@ -1,18 +1,27 @@
-import { Text, View } from "react-native";
-import { styles } from "../../styes/indexStyles";
-import { Link } from "expo-router";
+import { View, FlatList, Text } from "react-native";
+import { COLORS } from "../../constants/theme";
+import { mockPosts } from "../../constants/mockData";
+import { PostCard } from "../../components/PostCard";
 
 export default function Index() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Congratulations NAS!</Text>
-      <Text>You have started your first React Native Project</Text>
-      <Link href={"/notifications"} style={styles.button}>
-          <Text style={styles.buttonText}>Go to Notification</Text>
-      </Link>
-      <Link href={"/profile"} style={styles.button}>
-          <Text style={styles.buttonText}>Go to Profile</Text>
-      </Link>
+    <View style={{ flex: 1, backgroundColor: COLORS.background }}>
+      <View style={{ padding: 16 }}>
+        <Text style={{
+          fontSize: 24,
+          fontWeight: "bold",
+          color: COLORS.primary,
+          marginBottom: 8,
+        }}>
+          SpotLight
+        </Text>
+      </View>
+      <FlatList
+        data={mockPosts}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <PostCard post={item} />}
+        showsVerticalScrollIndicator={false}
+      />
     </View>
   );
 }

@@ -10,19 +10,11 @@ export default function TabsLayout() {
             tabBarActiveTintColor: COLORS.primary,
             tabBarInactiveTintColor: COLORS.gray,
             tabBarShowLabel: false,
-            tabBarStyle: {
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                elevation: 0,
-                backgroundColor: COLORS.background,
-                borderTopWidth: 0,
-                height: 60,
-            }
+            headerShown: false,
+            tabBarStyle: { backgroundColor: COLORS.background }
         }}
     >
-        <Tabs.Screen 
+        <Tabs.Screen
             name="index"
             options={{
                 title: 'Home',

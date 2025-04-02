@@ -1,7 +1,7 @@
 export const COLORS = {
     primary: '#4ADE80',
     secondary: '#2DD4BF',
-    background: '#000000',
+    background: '#121212',
     text: '#333333',
     border: '#DDDDDD',
     card: '#FFFFFF',
@@ -10,4 +10,8 @@ export const COLORS = {
     white: '#FFFFFF',
     gray: '#9CA3AF',
     graylight: '#D3D3D3',
+    darkgray: '#333333',
+    black: '#000000',
+    red: '#FF0000',
+    green: '#00FF00',
 } as const;
