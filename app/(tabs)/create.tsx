@@ -1,9 +1,31 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Dimensions } from 'react-native'
+import React, { useState, useEffect } from 'react'
 import * as ImagePicker from 'expo-image-picker'
+import { Stack } from 'expo-router'
 
 export default function Create() {
   const [image, setImage] = useState(null)
+  const [recentPhotos, setRecentPhotos] = useState([])
+
+  useEffect(() => {
+    loadRecentPhotos()
+  }, [])
+
+  const loadRecentPhotos = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    if (status !== 'granted') return
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+      allowsMultipleSelection: true,
+      selectionLimit: 12,
+    })
+
+    if (!result.canceled) {
+      setRecentPhotos(result.assets)
+    }
+  }
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
@@ -20,7 +42,7 @@ export default function Create() {
     })
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri as unknown as null)
+      setImage(result.assets[0].uri)
     }
   }
 
@@ -38,26 +60,62 @@ export default function Create() {
     })
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri as unknown as null)
+      setImage(result.assets[0].uri)
     }
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.imageContainer}>
+      <Stack.Screen
+        options={{
+          title: 'New post',
+          headerStyle: { backgroundColor: '#000' },
+          headerTitleStyle: { color: '#fff' },
+          headerRight: () => (
+            <TouchableOpacity>
+              <Text style={styles.nextButton}>Next</Text>
+            </TouchableOpacity>
+          ),
+        }}
+      />
+      <View style={styles.gridContainer}>
         {image ? (
-          <Image source={{ uri: image }} style={styles.image} />
+          <Image source={{ uri: image }} style={styles.mainImage} />
         ) : (
           <Text style={styles.placeholder}>No image selected</Text>
         )}
+        <View style={styles.gridLines}>
+          <View style={styles.verticalLine} />
+          <View style={styles.verticalLine} />
+          <View style={styles.horizontalLine} />
+          <View style={styles.horizontalLine} />
+        </View>
       </View>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={takePhoto}>
-          <Text style={styles.buttonText}>Take Photo</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={pickImage}>
-          <Text style={styles.buttonText}>Pick from Gallery</Text>
-        </TouchableOpacity>
+      <View style={styles.bottomSection}>
+        <View style={styles.mediaTypeBar}>
+          <Text style={styles.mediaTypeText}>RECENTS</Text>
+          <View style={styles.mediaButtons}>
+            <TouchableOpacity onPress={takePhoto} style={styles.mediaButton}>
+              <Text style={styles.mediaButtonIcon}>📷</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={pickImage} style={styles.mediaButton}>
+              <Text style={styles.mediaButtonIcon}>🖼️</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <ScrollView>
+          <View style={styles.recentPhotosGrid}>
+            {recentPhotos.map((photo, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => setImage(photo.uri)}
+                style={styles.recentPhotoContainer}
+              >
+                <Image source={{ uri: photo.uri }} style={styles.recentPhoto} />
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
       </View>
     </View>
   )
@@ -66,42 +124,90 @@ export default function Create() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: '#000',
   },
-  imageContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#1a1a1a',
-    borderRadius: 12,
-    marginBottom: 20,
+  nextButton: {
+    color: '#0095f6',
+    fontSize: 16,
+    fontWeight: '600',
+    marginRight: 15,
   },
-  image: {
+  gridContainer: {
+    width: '100%',
+    aspectRatio: 1,
+    backgroundColor: '#1a1a1a',
+    position: 'relative',
+  },
+  mainImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 12,
-    resizeMode: 'contain',
+    resizeMode: 'cover',
+  },
+  gridLines: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  verticalLine: {
+    position: 'absolute',
+    width: 1,
+    height: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    left: '33.33%',
+  },
+  horizontalLine: {
+    position: 'absolute',
+    height: 1,
+    width: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    top: '33.33%',
   },
   placeholder: {
     color: '#666',
     fontSize: 16,
+    alignSelf: 'center',
+    marginTop: '50%',
   },
-  buttonContainer: {
+  bottomSection: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+  mediaTypeBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 12,
-  },
-  button: {
-    flex: 1,
-    backgroundColor: '#0066ff',
-    padding: 15,
-    borderRadius: 8,
     alignItems: 'center',
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
   },
-  buttonText: {
+  mediaTypeText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
+  },
+  mediaButtons: {
+    flexDirection: 'row',
+    gap: 15,
+  },
+  mediaButton: {
+    padding: 5,
+  },
+  mediaButtonIcon: {
+    fontSize: 24,
+  },
+  recentPhotosGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  recentPhotoContainer: {
+    width: Dimensions.get('window').width / 4,
+    aspectRatio: 1,
+    padding: 1,
+  },
+  recentPhoto: {
+    width: '100%',
+    height: '100%',
   },
 })
